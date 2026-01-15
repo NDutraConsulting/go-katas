@@ -44,7 +44,6 @@ func printTreeStructure(label string, root *TreeNode) {
 	}
 
 	printTreeStructure("Left", root.Left)
-
 	printTreeStructure("Right", root.Right)
 	fmt.Printf("Val :%d - Node %s\n", root.Val, label)
 
