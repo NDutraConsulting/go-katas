@@ -24,47 +24,48 @@ func getValueSlice(s []int) []int {
 }
 
 func memCapsule() {
-	var s = createSlice()
 
-	fmt.Println("\n\n - getValue()")
+	fmt.Println("\n\n Use getValue() <  retains a reference on each execution of the for loop scope.")
 
-	for i := 0; i < 15; i++ {
-		s2 := createSlice()
-		//fmt.Println(s[i])
-		val := getValueSlice(s2)
+	for i := 0; i < 10; i++ {
+		s := createSlice()
+		val := getValue(s)
 
 		fmt.Printf("%p\n", &val)
 		PrintMem("tick: " + strconv.Itoa(i))
 
-		// drop references
+		// Drop references will clean this up
 		val = nil
-		s2 = nil
+		s = nil
 		runtime.GC()
 
 		time.Sleep(100 * time.Millisecond)
 	}
 
 	runtime.GC()
-
 	debug.FreeOSMemory() // optional, more aggressive
-	time.Sleep(5000 * time.Millisecond)
+	PrintMem("getValue() End after Garbag Collector call.\n")
 
-	fmt.Println("\n\n - getValueSlice()")
+	fmt.Println("\n\n Use > getValueSlice() < is recommended but does not work...")
+	fmt.Println("We must set the variables in the loop to nil to free memory.")
 
 	for i := 0; i < 10; i++ {
-		//fmt.Println(s[i])
+		s := createSlice()
 		val := getValueSlice(s)
 		fmt.Printf("%p\n", &val)
 		PrintMem("tick: " + strconv.Itoa(i))
 		time.Sleep(100 * time.Millisecond)
 	}
+
+	runtime.GC()
+	debug.FreeOSMemory() // optional, more aggressive
+	PrintMem("getValueSlice() End after Garbag Collector call.\n")
 }
 
 func RunSliceLeakDemo() {
 
+	fmt.Println("This is a scenario that can occur when polling a PORT, endpoint or kafka channel.")
 	PrintMem("start")
 	memCapsule()
-	time.Sleep(5000 * time.Millisecond)
-	PrintMem("\nClose")
 
 }

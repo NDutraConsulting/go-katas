@@ -55,11 +55,17 @@ func MapLeak(op options) {
 
 func RunMapLeakTest() {
 	runA()
+	scopeShiftTrigger()
 	runB()
 }
 
 func runA() {
-	fmt.Println("\nDoes NOT Clear Map with m=nil")
+	fmt.Println("Start of runA")
+	fmt.Println("> No runtime.GC() call but we do set m=nil and wait for GC...<")
+	PrintKBMem(">")
+
+	fmt.Println("\nDoes NOT Clear Map with m=nil even after waiting...")
+	fmt.Println(" - WE must set m=nil; and then call runtime.GC()")
 	MapLeak(options{clearMap: false})
 	l := make(map[int]string)
 
@@ -72,10 +78,24 @@ func runA() {
 	}
 	fmt.Println(l)
 	printAlloc()
+	fmt.Println("End of runA")
 }
 
 func runB() {
-	fmt.Println("\nClears Map with m=nil & runtime.GC()")
+	fmt.Println("\n\nStart of runB")
+	fmt.Println("> Use runtime.GC() call <")
+	fmt.Println("Clears Map with m=nil & runtime.GC()")
 	MapLeak(options{clearMap: true})
 	printAlloc()
+	PrintKBMem(">")
+	fmt.Println("End of runB")
+
+}
+
+func scopeShiftTrigger() {
+	fmt.Println("\n\n Run > scopeShiftTrigger()")
+	x := "Scoped String"
+	fmt.Println(x)
+	PrintKBMem(">")
+	fmt.Println("m := make(map[int][128]string) is still being held in the heap.")
 }
