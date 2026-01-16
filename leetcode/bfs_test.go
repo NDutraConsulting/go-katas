@@ -5,14 +5,9 @@ import (
 	"testing"
 )
 
-type test struct {
-	tree   *TreeNode
-	expect int
-}
-
 func TestMaxLevelSum(t *testing.T) {
 
-	var tests = []test{
+	var tests = []treeTest{
 		{tree: &TreeNode{
 			Val:   1,
 			Left:  &TreeNode{Val: -7, Right: nil, Left: nil},
