@@ -1,30 +1,55 @@
 # Overview
-Go katas, package experiment, unit testing and memory management analysis. 
+
+Go katas, package experiment, unit testing and memory management analysis.
 
 # Package Tests in the katas module
+
 ## basics
+
 - shapes_test.go > TestShapeStruct()
-``` BASH
+
+```BASH
 go test -v -run TestShapeStruct ./basics
 ```
 
 ## memory
+
 - maps_leak_test.go > TestMapsLeak()
-``` BASH
+
+```BASH
 go test -v -run TestMapsLeak ./memory
 ```
+
 - slice_leak_test.go > TestSliceLeak()
-``` BASH
+
+```BASH
 go test -v -run TestSliceLeak ./memory
 ```
 
 ## leetcode
-- bfs_test.go > TestMaxLevelSum() 
-``` BASH 
+
+- bfs_test.go > TestMaxLevelSum()
+
+```BASH
 go test -v -run TestMaxLevelSum ./leetcode
 ```
+
 - dfs_test.go > TestMaxDepth()
-``` BASH 
+
+```BASH
 go test -v -run TestMaxDepth ./leetcode
 ```
 
+## robot farm
+
+- rotten_orange_test.go > TestRottenOranges
+
+```BASH
+go test -v -run TestRottenOranges ./robot_farm
+```
+
+- rotten_orange_test.go > TestRottenOrangeRobots
+
+```BASH
+go test -v -run TestRottenOrangeRobots ./robot_farm
+```
