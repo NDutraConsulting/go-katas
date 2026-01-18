@@ -2,6 +2,25 @@ package robotfarm
 
 import "fmt"
 
+const debug = false
+
+// Constants for state
+const (
+	StateRotten  = "rotten"
+	StateRobot   = "robot"
+	StateEnd     = "end"
+	StateCleared = "cleared"
+	StateFallen  = "fallen"
+)
+
+// Grid cell values
+const (
+	CellEmpty  = 0
+	CellFresh  = 1
+	CellRotten = 2
+	CellRobot  = 3
+)
+
 type orangePos struct {
 	col   int
 	row   int
@@ -9,6 +28,9 @@ type orangePos struct {
 }
 
 func orangesRotting(grid [][]int) int {
+
+	fmt.Println("\n-START-")
+	printGrid(grid)
 
 	parallelQueue := make([]orangePos, 0)
 
@@ -18,16 +40,16 @@ func orangesRotting(grid [][]int) int {
 	MAX_COL := len(grid)
 	MAX_ROW := len(grid[0])
 
-	for col := 0; col < len(grid); col++ {
-		for row := 0; row < len(grid[0]); row++ {
+	for col := 0; col < MAX_COL; col++ {
+		for row := 0; row < MAX_ROW; row++ {
 
 			switch grid[col][row] {
-			case 2:
-				parallelQueue = append(parallelQueue, orangePos{col: col, row: row, state: "rotten"})
-			case 3:
-				parallelQueue = append(parallelQueue, orangePos{col: col, row: row, state: "robot"})
+			case CellRotten:
+				parallelQueue = append(parallelQueue, orangePos{col: col, row: row, state: StateRotten})
+			case CellRobot:
+				parallelQueue = append(parallelQueue, orangePos{col: col, row: row, state: StateRobot})
 				robots++
-			case 1:
+			case CellFresh:
 				freshOranges++
 			}
 		}
@@ -35,14 +57,19 @@ func orangesRotting(grid [][]int) int {
 
 	freshOrangesStart := freshOranges
 
-	parallelQueue = append(parallelQueue, orangePos{col: -1, row: -1, state: "end"})
+	parallelQueue = append(parallelQueue, orangePos{col: -1, row: -1, state: StateEnd})
 
 	// Why not 0?
 	elapsedTime := -1
-	directions := []orangePos{
-		{col: -1, row: 0, state: "back"}, {col: 0, row: -1, state: "up"},
-		{col: 1, row: 0, state: "left"}, {col: 0, row: 1, state: "down"}}
+	rottenDirections := rottenDirections()
+
+	// Introduces additional steps?
+	// robotDirections := robotDirections()
+
 	for {
+		// STOP BFS if queue is empty or only contains only robots
+		// Robots are never removed from the queue because the persist
+		// This means that the min length of the queue will be the total number of robots
 		if len(parallelQueue) == robots {
 			break
 		}
@@ -51,57 +78,31 @@ func orangesRotting(grid [][]int) int {
 		currentOrange := parallelQueue[0]
 		parallelQueue = parallelQueue[1:]
 
-		if currentOrange.state == "end" {
+		printDebug(currentOrange)
+
+		// StateBundle might create too much complexity
+		orchardState := stateBundle{
+			parallelQueue: &parallelQueue,
+			currentOrange: &currentOrange,
+			MAX_COL:       MAX_COL,
+			MAX_ROW:       MAX_ROW,
+			freshOranges:  &freshOranges}
+
+		switch currentOrange.state {
+		case StateEnd:
 			if len(parallelQueue) > robots {
-				parallelQueue = append(parallelQueue, orangePos{col: -1, row: -1, state: "end"})
+				parallelQueue = append(parallelQueue, orangePos{col: -1, row: -1, state: StateEnd})
 			}
 
 			elapsedTime++
 			continue
-		} else if currentOrange.state == "robot" {
-			// Remove rotten fruit around it -or-
-			// Spray neem oil to prevent spread
-			for _, dir := range directions {
-
-				colDir, rowDir := currentOrange.col+dir.col, currentOrange.row+dir.row
-
-				// spread the rotten in valid directions only
-				if MAX_COL > colDir && colDir >= 0 && MAX_ROW > rowDir && rowDir >= 0 {
-
-					if grid[colDir][rowDir] == 2 {
-						grid[colDir][rowDir] = 0
-
-						// search the queue and change the state to "cleared"
-						for i, q := range parallelQueue {
-							if q.col == colDir && q.row == rowDir {
-								parallelQueue[i].state = "cleared"
-								break
-							}
-						}
-					}
-				}
-
-			}
-			parallelQueue = append(parallelQueue, currentOrange)
-
-		} else if currentOrange.state == "rotten" {
-			for _, dir := range directions {
-
-				colDir, rowDir := currentOrange.col+dir.col, currentOrange.row+dir.row
-
-				// spread the rotten in valid directions only
-				if MAX_COL > colDir && colDir >= 0 && MAX_ROW > rowDir && rowDir >= 0 {
-
-					if grid[colDir][rowDir] == 1 {
-						grid[colDir][rowDir] = 2
-						freshOranges--
-						parallelQueue = append(parallelQueue, orangePos{col: colDir, row: rowDir, state: "rotten"})
-					}
-				}
-
-			}
-
+		case StateRobot:
+			robot(orchardState, rottenDirections, grid)
+		case StateRotten:
+			rotten(orchardState, rottenDirections, grid)
 		}
+		printDebug(currentOrange)
+
 	}
 
 	fmt.Println("Elapsed Time: ", elapsedTime)
@@ -118,9 +119,87 @@ func orangesRotting(grid [][]int) int {
 	return result
 }
 
+// State handlers
+func robot(sb stateBundle, directions []gridObject, grid [][]int) {
+	parallelQueue, currentOrange, MAX_COL, MAX_ROW, _ := sb.destructure()
+
+	// Remove rotten fruit around it -or-
+	// Spray neem oil to prevent spread
+	for _, dir := range directions {
+
+		colDir, rowDir := currentOrange.col+dir.col, currentOrange.row+dir.row
+
+		// spread the rotten in valid directions only
+		if MAX_COL > colDir && colDir >= 0 && MAX_ROW > rowDir && rowDir >= 0 {
+
+			if grid[colDir][rowDir] == 2 {
+				grid[colDir][rowDir] = 0
+
+				// search the queue and change the state to "cleared"
+				for i, q := range *parallelQueue {
+					if q.col == colDir && q.row == rowDir {
+						(*parallelQueue)[i].state = StateCleared
+						break
+					}
+				}
+			}
+		}
+
+	}
+	*parallelQueue = append(*parallelQueue, *currentOrange)
+}
+
+func rotten(sb stateBundle, directions []gridObject, grid [][]int) {
+
+	parallelQueue, currentOrange, MAX_COL, MAX_ROW, freshOranges := sb.destructure()
+
+	for _, dir := range directions {
+
+		colDir, rowDir := currentOrange.col+dir.col, currentOrange.row+dir.row
+
+		// spread the rotten in valid directions only
+		if MAX_COL > colDir && colDir >= 0 && MAX_ROW > rowDir && rowDir >= 0 {
+
+			if grid[colDir][rowDir] == 1 {
+				grid[colDir][rowDir] = 2
+				*freshOranges--
+				*parallelQueue = append(*parallelQueue, orangePos{col: colDir, row: rowDir, state: StateRotten})
+			}
+		}
+
+	}
+
+	// Pointer state setting check
+	if debug {
+		currentOrange.state = StateFallen
+		printDebug(*currentOrange)
+	}
+
+}
+
+func rottenDirections() []gridObject {
+	return []gridObject{
+		{col: -1, row: 0, direction: "back"}, {col: 0, row: -1, direction: "up"},
+		{col: 1, row: 0, direction: "left"}, {col: 0, row: 1, direction: "down"}}
+}
+
+func robotDirections() []gridObject {
+	return []gridObject{
+		{col: -1, row: 0, direction: "back"}, {col: 0, row: -1, direction: "up"},
+		{col: 1, row: 0, direction: "left"}, {col: 0, row: 1, direction: "down"},
+		{col: 1, row: 1, direction: "down-right"}, {col: -1, row: 1, direction: "down-left"},
+		{col: -1, row: -1, direction: "up-left"}, {col: 1, row: -1, direction: "up-right"}}
+}
+
 func printGrid(grid [][]int) {
 
 	for _, row := range grid {
 		fmt.Println(row)
+	}
+}
+
+func printDebug(cOrange orangePos) {
+	if debug {
+		fmt.Println(cOrange)
 	}
 }
