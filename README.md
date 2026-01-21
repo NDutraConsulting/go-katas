@@ -6,6 +6,12 @@ Go katas, package experiment, unit testing and memory management analysis.
 
 ## basics
 
+- api_analytics_test.go > TestAPIAnalytics()
+
+```BASH
+go test -v -run TestAPIAnalytics ./basics
+```
+
 - shapes_test.go > TestShapeStruct()
 
 ```BASH
