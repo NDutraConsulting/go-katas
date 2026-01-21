@@ -112,14 +112,14 @@ func (o *oshaRobot) renderWork() {
 			if o.targetSpace.gridPosition.col > robotPosition.col {
 				fmt.Println("Moving horizontally...")
 				pos.col++
-			} else {
+			} else if o.targetSpace.gridPosition.col < robotPosition.col {
 				pos.col--
 			}
 
 			if o.targetSpace.row > robotPosition.row {
 				fmt.Println("Moving vertically...")
 				pos.row++
-			} else {
+			} else if o.targetSpace.row < robotPosition.row {
 				pos.row--
 			}
 			o.move(pos.row, pos.col)
@@ -129,13 +129,13 @@ func (o *oshaRobot) renderWork() {
 		fmt.Println("Rendering work for robot ID: ", o.getID(), " in STATE_TURN_OFF_EQUIP")
 	case STATE_ABSORB_H2S:
 		fmt.Println("Rendering work for robot ID: ", o.getID(), " in STATE_ABSORB_H2S")
-		space := o.gridMap[o.oshaSensor.grid.col][o.oshaSensor.grid.row]
-		H2S_Level := space.H2S_Level
+
+		H2S_Level := o.currentSpace.H2S_Level
 
 		if H2S_Level > 0 && o.H2S_Storage < o.H2S_CAPACITY {
 			fmt.Println("Absorbing H2S at level: ", H2S_Level)
 			o.H2S_Storage += 1
-			space.H2S_Level--
+			o.currentSpace.H2S_Level--
 		}
 
 	case STATE_HOLD_POSITION:

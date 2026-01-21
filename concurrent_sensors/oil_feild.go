@@ -60,7 +60,7 @@ func sim1() bool {
 		oilFeild[robot.col()][robot.row()].oshaRobots[robot.getID()] = &robot
 
 		// Start with all robots searching for H2S at 0,0
-		//robot.setTargetSpace(&oilFeild[0][0])
+		robot.setTargetSpace(&oilFeild[0][0])
 	}
 
 	minutes := 1
