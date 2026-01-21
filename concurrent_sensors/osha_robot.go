@@ -59,7 +59,7 @@ func (robot *oshaRobot) processEnvironment() {
 
 // --- PROCESSING CYCLE FUNCTIONS ---
 /**
-* update()
+* (o *oshaRobot) update()
 * Updates the robot's environment awareness using sensor data
 * and then shifts to the next appropriate state
 **/
@@ -82,7 +82,7 @@ func (o *oshaRobot) update() {
 }
 
 /**
-* checkCollisions(gridObj gridObject)
+* (o *oshaRobot) checkCollisions(gridObj gridObject)
 * Checks for potential collisions with other objects
 * and the changes the state of this robot accordingly
 **/
@@ -170,13 +170,17 @@ func NewOshaRobot(row, col, h2sCapacity int, gridMap [][]gridSpace) oshaRobot {
 		H2S_CAPACITY:  h2sCapacity,
 		H2S_Storage:   0,
 		MAX_RADIATION: 100,
-		state:         STATE_HOLD_POSITION,
+		state:         STATE_FIND_HS2,
 		gridMap:       gridMap,
 		currentSpace:  &gridMap[row][col],
 	}
 }
 
 // --- HELPER FUNCTIONS ---
+
+func (o *oshaRobot) setTargetSpace(targetSpace *gridSpace) {
+	o.targetSpace = targetSpace
+}
 
 func (o *oshaRobot) move(row, col int) {
 
