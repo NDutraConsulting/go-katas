@@ -1,0 +1,146 @@
+package concurrentsensors
+
+import (
+	"fmt"
+	"time"
+)
+
+func makeBoard(ROW, COL int) [][]gridSpace {
+
+	oilFeild := make([][]gridSpace, ROW)
+	for i := range oilFeild {
+		oilFeild[i] = make([]gridSpace, COL)
+		for j := range COL {
+			oilFeild[i][j] = gridSpace{
+				gridPosition:      gridPosition{row: j, col: i},
+				gridObjects:       nil,
+				oshaRobots:        nil,
+				oshaSensors:       nil,
+				H2S_Level:         0,
+				H2SPocketVolume:   0,
+				radioactive_level: 0,
+			}
+		}
+	}
+
+	return oilFeild
+
+}
+
+func sim1() bool {
+
+	ROW, COL := 3, 3
+	oilFeild := makeBoard(ROW, COL)
+
+	printGrid(oilFeild)
+
+	oilWells := []gridObjectTable{
+		gridObject{
+			grid:  gridPosition{row: 1, col: 1},
+			ID:    1,
+			label: TYPE_OIL_WELL},
+		gridObject{
+			grid:  gridPosition{row: ROW / 2, col: COL - 1},
+			ID:    2,
+			label: TYPE_OIL_WELL},
+	}
+
+	for _, well := range oilWells {
+		gridObjects := oilFeild[well.col()][well.row()].gridObjects
+		if gridObjects == nil {
+			gridObjects = []gridObjectTable{}
+		}
+
+		oilFeild[well.col()][well.row()].gridObjects = append(gridObjects, well)
+	}
+
+	oshaRobotsInit := []oshaRobot{
+		NewOshaRobot(0, 0, H2S_LARGE, oilFeild),
+		NewOshaRobot(2, 2, H2S_LARGE, oilFeild),
+	}
+
+	for _, robot := range oshaRobotsInit {
+		oshaRobots := oilFeild[robot.col()][robot.row()].oshaRobots
+		if oshaRobots == nil {
+			oshaRobots = []oshaRobot{}
+		}
+		oilFeild[robot.col()][robot.row()].oshaRobots = append(oshaRobots, robot)
+	}
+
+	minutes := 1
+	simulateOperations(oilFeild, minutes)
+
+	return false
+}
+
+func simulateOperations(grid [][]gridSpace, minutes int) {
+
+	seconds := minutes * 2
+
+	// Simulate sensor data ingestion from the sensors and robots at the mining operation
+	for i := range seconds {
+		fmt.Println("\n\nTime Domain - Tick: ", i)
+		for r := range grid {
+			fmt.Println("|----------- Process Spaces in ROW: ", r, "----------|")
+			for c := range grid[r] {
+
+				space := &grid[r][c]
+
+				if len(space.gridObjects) == 0 {
+					continue
+				}
+
+				fmt.Println("START Blocking thread for setting up the Environtment")
+				// Process environment objects
+				for _, obj := range space.gridObjects {
+
+					// read incoming event streams
+					obj.processEnvironment(space)
+
+				}
+				fmt.Println("STOP Blocking thread for setting up the Environtment")
+
+			}
+
+			for c := range grid[r] {
+
+				space := &grid[r][c]
+				// Process sensors
+				for _, sensor := range space.oshaSensors {
+					sensor.processEnvironment(space)
+				}
+
+				// Process sensors
+				for _, robot := range space.oshaRobots {
+					robot.processEnvironment(space)
+				}
+
+				processRobots(space)
+
+			}
+		}
+
+		// Sleep for 10ms
+		time.Sleep(30 * time.Millisecond)
+	}
+}
+
+func processRobots(space *gridSpace) {
+
+}
+
+func printGrid(grid [][]gridSpace) {
+
+	for _, row := range grid {
+		fmt.Println("|-------------------------------------------------------------------------------|")
+		fmt.Print("| ")
+		for _, space := range row {
+			fmt.Print(space)
+			fmt.Print(" | ")
+		}
+
+		fmt.Println()
+	}
+	fmt.Println("|-------------------------------------------------------------------------------|")
+
+}
