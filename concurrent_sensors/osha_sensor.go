@@ -6,23 +6,23 @@ import (
 )
 
 const (
-	COMMAND_HAZARD_DETECTED = "HAZARD_DETECTED"
-	COMMAND_REMOVE_HAZARD   = "REMOVE_HAZARD"
-	COMMAND_STOP            = "STOP"
-	COMMAND_FIND_HAZARD     = "FIND_HAZARD"
+	commandHazardDetected = "HAZARD_DETECTED"
+	commandRemoveHazard   = "REMOVE_HAZARD"
+	commandStop           = "STOP"
+	commandFindHazard     = "FIND_HAZARD"
 )
 
 type h2sRecord struct {
-	H2S_Level int
+	h2sLevel  int
 	timestamp int64
 	state     string
 }
 
 type oshaSensor struct {
 	gridObject
-	H2S_Threshold int
-	H2S_Records   []h2sRecord
-	currentSpace  *gridSpace
+	h2sThreshold int
+	h2sRecords   []h2sRecord
+	currentSpace *gridSpace
 }
 
 func (o oshaSensor) renderWork(space *gridSpace) {
@@ -40,12 +40,12 @@ func (o oshaSensor) update() {
 var oshaSensorCounter int64
 
 const (
-	OSHA_SENSOR    = "OSHA_SENSOR"
-	H2S_LOW        = 3
-	H2S_HAZARD     = 5
-	STATE_NORMAL   = "NORMAL"
-	STATE_WARNING  = "WARNING"
-	STATE_CRITICAL = "CRITICAL"
+	oshaSENSOR              = "OSHA_SENSOR"
+	oshaH2SLow              = 3
+	oshaH2SHazard           = 5
+	oshaSensorStateNormal   = "NORMAL"
+	oshaSensorStateWarning  = "WARNING"
+	oshaSensorStateCritical = "CRITICAL"
 )
 
 // Constructor Function
@@ -57,7 +57,7 @@ func NewOshaSensor(row, col, h2sThreshold int) oshaSensor {
 			grid:  gridPosition{row: row, col: col},
 			label: "OSHA Sensor",
 		},
-		H2S_Threshold: h2sThreshold,
-		H2S_Records:   []h2sRecord{},
+		h2sThreshold: h2sThreshold,
+		h2sRecords:   []h2sRecord{},
 	}
 }

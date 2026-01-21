@@ -7,31 +7,29 @@ import (
 
 // ---STATE STEPS---
 const (
-	STATE_MOVE           = "MOVE"
-	STATE_FIND_HS2       = "FIND_HS2"
-	STATE_TURN_OFF_EQUIP = "TURN_OFF_EQUIP"
-	STATE_ABSORB_H2S     = "ABSORB_H2S"
-	STATE_HOLD_POSITION  = "HOLD_POSITION"
+	oshaStateFindH2S      = "FIND_HS2"
+	oshaStateTurnOffEquip = "TURN_OFF_EQUIP"
+	oshaStateAbsorbH2S    = "ABSORB_H2S"
+	oshaStateHoldPosition = "HOLD_POSITION"
 )
 
 // ---Initializers---
 const (
-	OSHA_ROBOT     = "OSHA_ROBOT"
-	H2S_CAP_SMALL  = 3
-	H2S_CAP_MEDIUM = 5
-	H2S_CAP_LARGE  = 8
+	oshaRobotTag     = "OSHA_ROBOT"
+	robotH2SCapSMALL = 3
+	robotH2SCapLARGE = 8
 )
 
 type oshaRobot struct {
 	oshaSensor
-	H2S_CAPACITY    int
-	H2S_Storage     int
-	radiation_level int
-	MAX_RADIATION   int
-	state           string
-	gridMap         [][]gridSpace
-	targetSpace     *gridSpace
-	currentSpace    *gridSpace
+	robotH2SCapacity int
+	robotH2SStorage  int
+	radiatioLevel    int
+	maxRadiation     int
+	state            string
+	gridMap          [][]gridSpace
+	targetSpace      *gridSpace
+	currentSpace     *gridSpace
 }
 
 // --- GAME LOOP WITH A THREAD BLOCK (GO WORKER)
@@ -65,15 +63,15 @@ func (robot *oshaRobot) processEnvironment() {
 **/
 func (o *oshaRobot) update() {
 
-	fmt.Println("Update ID: ", o.getID(), " ->Expected Type: ", OSHA_ROBOT)
+	fmt.Println("Update ID: ", o.getID(), " ->Expected Type: ", oshaRobotTag)
 
-	surroundingH2SLevel := o.gridMap[o.col()][o.row()].H2S_Level
-	if surroundingH2SLevel >= H2S_HAZARD {
-		fmt.Println("-------------------> !!!!!! HAZARD H2S detected at surrounding level: ", surroundingH2SLevel)
-		o.state = STATE_ABSORB_H2S
+	surroundingh2sLevel := o.gridMap[o.col()][o.row()].h2sLevel
+	if surroundingh2sLevel >= oshaH2SHazard {
+		fmt.Println("-------------------> !!!!!! HAZARD H2S detected at surrounding level: ", surroundingh2sLevel)
+		o.state = oshaStateAbsorbH2S
 
-	} else if surroundingH2SLevel >= H2S_LOW {
-		fmt.Println("-------------------> H2S detected at surrounding level: ", surroundingH2SLevel)
+	} else if surroundingh2sLevel >= oshaH2SLow {
+		fmt.Println("-------------------> H2S detected at surrounding level: ", surroundingh2sLevel)
 	}
 
 	// Read onboard sensor data
@@ -100,11 +98,11 @@ func (o *oshaRobot) renderWork() {
 	robotPosition := o.oshaSensor.grid
 
 	switch o.state {
-	case STATE_FIND_HS2:
-		fmt.Println("Rendering work for robot ID: ", o.getID(), " in STATE_FIND_HS2")
+	case oshaStateFindH2S:
+		fmt.Println("Rendering work for robot ID: ", o.getID(), " in oshaStateFindH2S")
 		if o.targetSpace != nil {
 			if o.targetSpace.gridPosition.col == robotPosition.col && o.targetSpace.row == robotPosition.row {
-				o.state = STATE_ABSORB_H2S
+				o.state = oshaStateAbsorbH2S
 				return
 			}
 
@@ -125,21 +123,21 @@ func (o *oshaRobot) renderWork() {
 			o.move(pos.row, pos.col)
 		}
 
-	case STATE_TURN_OFF_EQUIP:
-		fmt.Println("Rendering work for robot ID: ", o.getID(), " in STATE_TURN_OFF_EQUIP")
-	case STATE_ABSORB_H2S:
-		fmt.Println("Rendering work for robot ID: ", o.getID(), " in STATE_ABSORB_H2S")
+	case oshaStateTurnOffEquip:
+		fmt.Println("Rendering work for robot ID: ", o.getID(), " in oshaStateTurnOffEquip")
+	case oshaStateAbsorbH2S:
+		fmt.Println("Rendering work for robot ID: ", o.getID(), " in oshaStateAbsorbH2S")
 
-		H2S_Level := o.currentSpace.H2S_Level
+		h2sLevel := o.currentSpace.h2sLevel
 
-		if H2S_Level > 0 && o.H2S_Storage < o.H2S_CAPACITY {
-			fmt.Println("Absorbing H2S at level: ", H2S_Level)
-			o.H2S_Storage += 1
-			o.currentSpace.H2S_Level--
+		if h2sLevel > 0 && o.robotH2SStorage < o.robotH2SCapacity {
+			fmt.Println("Absorbing H2S at level: ", h2sLevel)
+			o.robotH2SStorage += 1
+			o.currentSpace.h2sLevel--
 		}
 
-	case STATE_HOLD_POSITION:
-		fmt.Println("Rendering work for robot ID: ", o.getID(), " in STATE_HOLD_POSITION")
+	case oshaStateHoldPosition:
+		fmt.Println("Rendering work for robot ID: ", o.getID(), " in oshaStateHoldPosition")
 	}
 }
 
@@ -163,16 +161,16 @@ func NewOshaRobot(row, col, h2sCapacity int, gridMap [][]gridSpace) oshaRobot {
 			gridObject: gridObject{
 				ID:    atomic.AddInt64(&oshaRobotCounter, 1),
 				grid:  gridPosition{row: row, col: col},
-				label: OSHA_ROBOT,
+				label: oshaRobotTag,
 			},
 		},
 
-		H2S_CAPACITY:  h2sCapacity,
-		H2S_Storage:   0,
-		MAX_RADIATION: 100,
-		state:         STATE_FIND_HS2,
-		gridMap:       gridMap,
-		currentSpace:  &gridMap[row][col],
+		robotH2SCapacity: h2sCapacity,
+		robotH2SStorage:  0,
+		maxRadiation:     100,
+		state:            oshaStateFindH2S,
+		gridMap:          gridMap,
+		currentSpace:     &gridMap[row][col],
 	}
 }
 

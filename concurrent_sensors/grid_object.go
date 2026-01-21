@@ -8,32 +8,31 @@ type gridObject struct {
 	grid  gridPosition
 	ID    int64
 	label string
-	// geoPos *geoPosition //Optional
 }
 
 const (
-	TYPE_OIL_WELL        = "OIL_WELL"
-	TYPE_LITHIUM_MINE    = "LITHIUM_MINE"
-	TYPE_RADIOACTIVE_ORE = "TYPE_RADIOACTIVE_ORE"
+	typeOilWell        = "OIL_WELL"
+	typeLithiumMine    = "LITHIUM_MINE"
+	typeRadioactiveOre = "typeRadioactiveOre"
 )
 
 func (o gridObject) processEnvironment(space *gridSpace) {
 	fmt.Println("Processing environment for object ID: ", o.getID())
 	// Redux style update
 	switch o.label {
-	case TYPE_OIL_WELL:
+	case typeOilWell:
 		// Handle oil well update
-		fmt.Println("Update ID: ", o.getID(), " ->Expected Type: ", TYPE_OIL_WELL)
+		fmt.Println("Update ID: ", o.getID(), " ->Expected Type: ", typeOilWell)
 
 		// Pump HS2
 		space.updateH2S()
 
-	case TYPE_LITHIUM_MINE:
+	case typeLithiumMine:
 		// Handle lithium mine update
-		fmt.Println("Update ID: ", o.getID(), "Expected Type: ", TYPE_LITHIUM_MINE)
-	case TYPE_RADIOACTIVE_ORE:
+		fmt.Println("Update ID: ", o.getID(), "Expected Type: ", typeLithiumMine)
+	case typeRadioactiveOre:
 		// Handle radioactive ore update
-		fmt.Println("Update ID: ", o.getID(), "Expected Type: ", TYPE_RADIOACTIVE_ORE)
+		fmt.Println("Update ID: ", o.getID(), "Expected Type: ", typeRadioactiveOre)
 		space.updateRadioactive(1)
 	}
 }

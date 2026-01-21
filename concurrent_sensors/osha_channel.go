@@ -1,5 +1,5 @@
 package concurrentsensors
 
 const (
-	CHANNEL_H2S = "H2S"
+	oshaChannelH2S = "H2S"
 )

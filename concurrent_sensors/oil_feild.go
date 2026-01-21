@@ -12,13 +12,13 @@ func makeBoard(ROW, COL int) [][]gridSpace {
 		oilFeild[i] = make([]gridSpace, COL)
 		for j := range COL {
 			oilFeild[i][j] = gridSpace{
-				gridPosition:      gridPosition{row: j, col: i},
-				gridObjects:       []gridObjectTable{},
-				oshaRobots:        map[string]*oshaRobot{},
-				oshaSensors:       []oshaSensor{},
-				H2S_Level:         0,
-				H2SPocketVolume:   0,
-				radioactive_level: 0,
+				gridPosition:     gridPosition{row: j, col: i},
+				gridObjects:      []gridObjectTable{},
+				oshaRobots:       map[string]*oshaRobot{},
+				oshaSensors:      []oshaSensor{},
+				h2sLevel:         0,
+				h2sPocketVolume:  0,
+				radioactiveLevel: 0,
 			}
 		}
 	}
@@ -38,22 +38,22 @@ func sim1() bool {
 		gridObject{
 			grid:  gridPosition{row: 0, col: 0},
 			ID:    1,
-			label: TYPE_OIL_WELL},
+			label: typeOilWell},
 		gridObject{
 			grid:  gridPosition{row: 1, col: 2},
 			ID:    2,
-			label: TYPE_OIL_WELL},
+			label: typeOilWell},
 	}
 
 	for _, well := range oilWells {
 		gridObjects := oilFeild[well.col()][well.row()].gridObjects
 		oilFeild[well.col()][well.row()].gridObjects = append(gridObjects, well)
-		oilFeild[well.col()][well.row()].H2SPocketVolume = 100
+		oilFeild[well.col()][well.row()].h2sPocketVolume = 100
 	}
 
 	oshaRobotsInit := []oshaRobot{
-		NewOshaRobot(0, 1, H2S_CAP_LARGE, oilFeild),
-		NewOshaRobot(2, 2, H2S_CAP_SMALL, oilFeild),
+		NewOshaRobot(0, 1, robotH2SCapLARGE, oilFeild),
+		NewOshaRobot(2, 2, robotH2SCapSMALL, oilFeild),
 	}
 
 	for _, robot := range oshaRobotsInit {
@@ -114,7 +114,6 @@ func simulateOperations(grid [][]gridSpace, minutes int) {
 			}
 		}
 
-		// Sleep for 10ms
 		time.Sleep(30 * time.Millisecond)
 	}
 }
