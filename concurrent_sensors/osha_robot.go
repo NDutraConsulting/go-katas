@@ -34,6 +34,7 @@ type oshaRobot struct {
 	currentSpace    *gridSpace
 }
 
+// --- GAME LOOP WITH A THREAD BLOCK (GO WORKER)
 func (robot *oshaRobot) processEnvironment() {
 	go func(rb *oshaRobot) {
 		fmt.Println("\nTHREAD START: Processing environment for robot ID: ", rb.getID())
@@ -48,7 +49,7 @@ func (robot *oshaRobot) processEnvironment() {
 
 		}
 
-		// capture robot and obj for the goroutine to avoid loop variable capture
+		// Capture robot and obj for the goroutine to avoid loop variable capture
 		rb.renderWork()
 		rb.recordProgress()
 		fmt.Println("THREAD STOP for robot ID: ", rb.getID())
@@ -56,6 +57,12 @@ func (robot *oshaRobot) processEnvironment() {
 
 }
 
+// --- PROCESSING CYCLE FUNCTIONS ---
+/**
+* update()
+* Updates the robot's environment awareness using sensor data
+* and then shifts to the next appropriate state
+**/
 func (o *oshaRobot) update() {
 
 	fmt.Println("Update ID: ", o.getID(), " ->Expected Type: ", OSHA_ROBOT)
@@ -74,10 +81,19 @@ func (o *oshaRobot) update() {
 	// Read distributed sensor data from channel
 }
 
+/**
+* checkCollisions(gridObj gridObject)
+* Checks for potential collisions with other objects
+* and the changes the state of this robot accordingly
+**/
 func (o *oshaRobot) checkCollisions(gridObj gridObject) {
 	fmt.Println("Checking collisions for robot ID: ", o.getID(), " and object: ", gridObj)
 }
 
+/**
+* (o *oshaRobot) renderWork()
+* Renders the work for the robot based on its current state
+**/
 func (o *oshaRobot) renderWork() {
 	fmt.Println("Rendering work for robot ID: ", o.getID())
 
@@ -127,24 +143,19 @@ func (o *oshaRobot) renderWork() {
 	}
 }
 
+/**
+* (o *oshaRobot) recordProgress()
+* Records the progress of the robot in its memory
+* and sends to the server storage
+**/
 func (o *oshaRobot) recordProgress() {
 	fmt.Println("Recording progress for robot ID: ", o.getID())
 }
 
-func (o *oshaRobot) move(row, col int) {
-
-	delete(o.currentSpace.oshaRobots, o.getID())
-
-	o.oshaSensor.grid = gridPosition{row: row, col: col}
-
-	o.currentSpace = &o.gridMap[row][col]
-
-	o.currentSpace.oshaRobots[o.getID()] = o
-}
-
+// --- UNIQUE ID COUNTER FOR OSHA ROBOT ---
 var oshaRobotCounter int64
 
-// Constructor Function
+// --- Constructor Function ---
 func NewOshaRobot(row, col, h2sCapacity int, gridMap [][]gridSpace) oshaRobot {
 	return oshaRobot{
 		// Increment and get the new value atomically
@@ -163,4 +174,17 @@ func NewOshaRobot(row, col, h2sCapacity int, gridMap [][]gridSpace) oshaRobot {
 		gridMap:       gridMap,
 		currentSpace:  &gridMap[row][col],
 	}
+}
+
+// --- HELPER FUNCTIONS ---
+
+func (o *oshaRobot) move(row, col int) {
+
+	delete(o.currentSpace.oshaRobots, o.getID())
+
+	o.oshaSensor.grid = gridPosition{row: row, col: col}
+
+	o.currentSpace = &o.gridMap[row][col]
+
+	o.currentSpace.oshaRobots[o.getID()] = o
 }
