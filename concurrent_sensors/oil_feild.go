@@ -110,12 +110,10 @@ func simulateOperations(grid [][]gridSpace, minutes int) {
 					sensor.processEnvironment(space)
 				}
 
-				// Process sensors
+				// Process robots
 				for _, robot := range space.oshaRobots {
 					robot.processEnvironment(space)
 				}
-
-				processRobots(space)
 
 			}
 		}
@@ -123,10 +121,6 @@ func simulateOperations(grid [][]gridSpace, minutes int) {
 		// Sleep for 10ms
 		time.Sleep(30 * time.Millisecond)
 	}
-}
-
-func processRobots(space *gridSpace) {
-
 }
 
 func printGrid(grid [][]gridSpace) {

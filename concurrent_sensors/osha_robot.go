@@ -15,7 +15,7 @@ type oshaRobot struct {
 	gridMap         [][]gridSpace
 }
 
-func (robot oshaRobot) processEnvironment(space *gridSpace, grid [][]gridSpace) {
+func (robot oshaRobot) processEnvironment(space *gridSpace) {
 	go func(rb oshaRobot, sp *gridSpace) {
 		fmt.Println("THREAD START: Processing environment for robot ID: ", rb.getID())
 
