@@ -53,3 +53,11 @@ go test -v -run TestRottenOranges ./robot_farm
 ```BASH
 go test -v -run TestRottenOrangeRobots ./robot_farm
 ```
+
+## Concurrent Osha Robots - 2D Micro Game Engine
+
+- oil_feild_test.go > TestOilFeild
+
+```BASH
+go test -v -run TestOilFeild ./concurrent_sensors
+```
