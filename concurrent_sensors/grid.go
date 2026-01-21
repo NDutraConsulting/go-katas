@@ -1,5 +1,7 @@
 package concurrentsensors
 
+import "fmt"
+
 type gridPosition struct {
 	row int
 	col int
@@ -8,8 +10,8 @@ type gridPosition struct {
 type gridSpace struct {
 	gridPosition
 	gridObjects       []gridObjectTable // Optional
-	oshaRobots        []oshaRobot       // Optional
-	oshaSensors       []oshaSensor      // Optional
+	oshaRobots        map[string]*oshaRobot
+	oshaSensors       []oshaSensor // Optional
 	H2S_Level         int
 	radioactive_level int
 	H2SPocketVolume   int
@@ -19,10 +21,11 @@ type gridSpace struct {
 }
 
 func (g *gridSpace) updateH2S() {
-
+	fmt.Println("Update H2S - Pocket Volume: ", g.H2SPocketVolume)
 	if g.H2SPocketVolume > 0 {
-		g.H2S_Level += 1
-		g.H2SPocketVolume -= 1
+		fmt.Println("Update H2S: ", g.H2S_Level)
+		g.H2S_Level += 2
+		g.H2SPocketVolume -= 2
 	}
 }
 

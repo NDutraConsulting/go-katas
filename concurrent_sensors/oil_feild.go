@@ -13,9 +13,9 @@ func makeBoard(ROW, COL int) [][]gridSpace {
 		for j := range COL {
 			oilFeild[i][j] = gridSpace{
 				gridPosition:      gridPosition{row: j, col: i},
-				gridObjects:       nil,
-				oshaRobots:        nil,
-				oshaSensors:       nil,
+				gridObjects:       []gridObjectTable{},
+				oshaRobots:        map[string]*oshaRobot{},
+				oshaSensors:       []oshaSensor{},
 				H2S_Level:         0,
 				H2SPocketVolume:   0,
 				radioactive_level: 0,
@@ -36,35 +36,28 @@ func sim1() bool {
 
 	oilWells := []gridObjectTable{
 		gridObject{
-			grid:  gridPosition{row: 1, col: 1},
+			grid:  gridPosition{row: 0, col: 0},
 			ID:    1,
 			label: TYPE_OIL_WELL},
 		gridObject{
-			grid:  gridPosition{row: ROW / 2, col: COL - 1},
+			grid:  gridPosition{row: 1, col: 2},
 			ID:    2,
 			label: TYPE_OIL_WELL},
 	}
 
 	for _, well := range oilWells {
 		gridObjects := oilFeild[well.col()][well.row()].gridObjects
-		if gridObjects == nil {
-			gridObjects = []gridObjectTable{}
-		}
-
 		oilFeild[well.col()][well.row()].gridObjects = append(gridObjects, well)
+		oilFeild[well.col()][well.row()].H2SPocketVolume = 100
 	}
 
 	oshaRobotsInit := []oshaRobot{
-		NewOshaRobot(0, 0, H2S_LARGE, oilFeild),
-		NewOshaRobot(2, 2, H2S_LARGE, oilFeild),
+		NewOshaRobot(0, 1, H2S_CAP_LARGE, oilFeild),
+		NewOshaRobot(2, 2, H2S_CAP_SMALL, oilFeild),
 	}
 
 	for _, robot := range oshaRobotsInit {
-		oshaRobots := oilFeild[robot.col()][robot.row()].oshaRobots
-		if oshaRobots == nil {
-			oshaRobots = []oshaRobot{}
-		}
-		oilFeild[robot.col()][robot.row()].oshaRobots = append(oshaRobots, robot)
+		oilFeild[robot.col()][robot.row()].oshaRobots[robot.getID()] = &robot
 	}
 
 	minutes := 1
@@ -75,13 +68,13 @@ func sim1() bool {
 
 func simulateOperations(grid [][]gridSpace, minutes int) {
 
-	seconds := minutes * 2
+	seconds := minutes * 10
 
 	// Simulate sensor data ingestion from the sensors and robots at the mining operation
 	for i := range seconds {
-		fmt.Println("\n\nTime Domain - Tick: ", i)
+		fmt.Println("\n\nTime Domain - Tick: ", i+1)
 		for r := range grid {
-			fmt.Println("|----------- Process Spaces in ROW: ", r, "----------|")
+			fmt.Println("\n|----------- Process Spaces in ROW: ", r, "----------|")
 			for c := range grid[r] {
 
 				space := &grid[r][c]
@@ -112,7 +105,7 @@ func simulateOperations(grid [][]gridSpace, minutes int) {
 
 				// Process robots
 				for _, robot := range space.oshaRobots {
-					robot.processEnvironment(space)
+					robot.processEnvironment()
 				}
 
 			}

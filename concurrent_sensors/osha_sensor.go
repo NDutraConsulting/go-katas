@@ -5,6 +5,13 @@ import (
 	"sync/atomic"
 )
 
+const (
+	COMMAND_HAZARD_DETECTED = "HAZARD_DETECTED"
+	COMMAND_REMOVE_HAZARD   = "REMOVE_HAZARD"
+	COMMAND_STOP            = "STOP"
+	COMMAND_FIND_HAZARD     = "FIND_HAZARD"
+)
+
 type h2sRecord struct {
 	H2S_Level int
 	timestamp int64
@@ -15,6 +22,7 @@ type oshaSensor struct {
 	gridObject
 	H2S_Threshold int
 	H2S_Records   []h2sRecord
+	currentSpace  *gridSpace
 }
 
 func (o oshaSensor) renderWork(space *gridSpace) {
