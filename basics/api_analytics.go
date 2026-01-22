@@ -42,10 +42,14 @@ func runHistoryAnaliticsA() (string, int64) {
 	apiMap := map[string]ApiInfo{}
 
 	// We know the number of elements we need so lets initialize the memory
-	apiLatency := make(map[string]int, len(logs))
+	apiLatency := map[string]int{}
 
 	for _, logArr := range logs {
 
+		if logArr[1] != "200" {
+			// We only care about successful requests
+			continue
+		}
 		key := logArr[0]
 		latency, _ := strconv.Atoi(logArr[2])
 		apiLatency[key] += latency
@@ -58,6 +62,8 @@ func runHistoryAnaliticsA() (string, int64) {
 
 			avgLatency := apiLatency[key] / entry.SuccessCount
 			entry.AvgLatency = avgLatency
+
+			apiMap[key] = entry
 
 			apiMap[key] = entry
 
@@ -93,11 +99,15 @@ func runHistoryAnaliticsB() (string, int64) {
 	apiMap := map[string]ApiInfo{}
 
 	// We know the number of elements we need so lets initialize the memory
-	apiLatency := make(map[string]int, len(logHistory))
+	apiLatency := map[string]int{}
 
 	for _, log := range logHistory {
 
 		logArr := strings.Fields(log)
+		if logArr[1] != "200" {
+			// We only care about successful requests
+			continue
+		}
 
 		key := logArr[0]
 		latency, _ := strconv.Atoi(logArr[2])
