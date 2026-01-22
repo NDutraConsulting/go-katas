@@ -51,7 +51,10 @@ func runHistoryAnaliticsA() (string, int64) {
 			continue
 		}
 		key := logArr[0]
-		latency, _ := strconv.Atoi(logArr[2])
+		latency, err := strconv.Atoi(logArr[2])
+		if err != nil {
+			latency = -9999999
+		}
 		apiLatency[key] += latency
 
 		_, keyExists := apiMap[key]
@@ -62,8 +65,6 @@ func runHistoryAnaliticsA() (string, int64) {
 
 			avgLatency := apiLatency[key] / entry.SuccessCount
 			entry.AvgLatency = avgLatency
-
-			apiMap[key] = entry
 
 			apiMap[key] = entry
 
@@ -110,7 +111,11 @@ func runHistoryAnaliticsB() (string, int64) {
 		}
 
 		key := logArr[0]
-		latency, _ := strconv.Atoi(logArr[2])
+		latency, err := strconv.Atoi(logArr[2])
+		if err != nil {
+			latency = -9999999
+		}
+
 		apiLatency[key] += latency
 
 		_, keyExists := apiMap[key]
