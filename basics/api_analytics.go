@@ -55,6 +55,9 @@ func runHistoryAnalyticsA() (string, string, int64) {
 	apiLatencyFailure := map[string]int{}
 
 	for _, logArr := range logs {
+		if !logArr.StatusValid {
+			continue
+		}
 		if is2xx(logArr.Status) {
 			setData(logArr, apiMapSuccess, apiLatencySuccess)
 		} else if is5xx(logArr.Status) {
@@ -81,8 +84,11 @@ func runHistoryAnalyticsB() (string, string, int64) {
 	apiLatencyFailure := map[string]int{}
 
 	for _, log := range logHistory {
-
 		logArr := parseLogLine(log)
+		if !logArr.StatusValid {
+			continue
+		}
+
 		if is2xx(logArr.Status) {
 			setData(logArr, apiMapSuccess, apiLatencySuccess)
 		} else if is5xx(logArr.Status) {
@@ -156,8 +162,8 @@ func extractJsonApiMap(apiMap map[string]internalApiInfo, responseType string) s
 }
 
 type ResponseJSON struct {
-	ResponseType string
-	Services     map[string]PublicAPIInfo
+	ResponseType string                   `json:"response_type"`
+	Services     map[string]PublicAPIInfo `json:"services"`
 }
 
 type ParsedLog struct {
