@@ -1,7 +1,9 @@
 package basics
 
 import (
+	"encoding/json"
 	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -13,6 +15,24 @@ func TestAPIAnalytics(t *testing.T) {
 	if responseA != responseB {
 		t.Errorf("Expected same output, got different outputs")
 	}
+
+	// Accounting for map ordering issues
+	var mapA map[string]PublicAPIInfo
+	var mapB map[string]PublicAPIInfo
+	err := json.Unmarshal([]byte(responseA), &mapA)
+	if err != nil {
+		t.Fatalf("failed to unmarshal responseA: %v", err)
+	}
+
+	err = json.Unmarshal([]byte(responseB), &mapB)
+	if err != nil {
+		t.Fatalf("failed to unmarshal responseB: %v", err)
+	}
+
+	if !reflect.DeepEqual(mapA, mapB) {
+		t.Errorf("Expected same output, got different outputs\nA=%v\nB=%v", mapA, mapB)
+	}
+
 	fmt.Println("responseA:", responseA)
 	fmt.Println("responseB:", responseB)
 
