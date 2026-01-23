@@ -42,12 +42,12 @@ func TestAPIAnalytics(t *testing.T) {
 	fmt.Println("failureResponseA:", failureResponseA)
 	fmt.Println("failureResponseB:", failureResponseB)
 
-	fmt.Println("============================ Success Analytics ============================")
+	fmt.Println("\n============================ Success Analytics ============================")
 
 	fmt.Println("successResponseA:", successResponseA)
 	fmt.Println("successResponseB:", successResponseB)
 
-	fmt.Println("------------ RUN 1 (A -> B)------------")
+	fmt.Println("\n------------ RUN 1 (A -> B)------------")
 	fmt.Println("A time: ", elapsedA)
 	fmt.Println("B time: ", elapsedB)
 
