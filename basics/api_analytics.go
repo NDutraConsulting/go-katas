@@ -28,7 +28,7 @@ func requestHistory() []string {
 }
 
 type internalApiInfo struct {
-	successCount      int
+	count             int
 	avgLatency        int
 	validLatencyCount int
 	latencyErrors     []string
@@ -48,20 +48,22 @@ func runHistoryAnalyticsA() (string, int64) {
 		logs[i] = parseLogLine(log)
 	}
 
-	apiMap := map[string]internalApiInfo{}
+	apiMapSuccess := map[string]internalApiInfo{}
+	apiMapFailure := map[string]internalApiInfo{}
 	apiLatency := map[string]int{}
-	for _, logArr := range logs {
 
-		if logArr.Status != "200" {
-			// We only care about successful requests
-			continue
+	for _, log := range logHistory {
+		logArr := parseLogLine(log)
+		switch logArr.Status {
+		case "200":
+			setData(logArr, apiMapSuccess, apiLatency)
+		case "500":
+			setData(logArr, apiMapFailure, apiLatency)
 		}
-
-		setDataForSuccess(logArr, apiMap, apiLatency)
 	}
 
 	elapsed := time.Since(start)
-	return extractJsonApiMap(apiMap), elapsed.Nanoseconds()
+	return extractJsonApiMap(apiMapSuccess), elapsed.Nanoseconds()
 }
 
 /**
@@ -72,24 +74,25 @@ func runHistoryAnalyticsB() (string, int64) {
 	start := time.Now()
 
 	logHistory := requestHistory()
-	apiMap := map[string]internalApiInfo{}
+	apiMapSuccess := map[string]internalApiInfo{}
+	apiMapFailure := map[string]internalApiInfo{}
 	apiLatency := map[string]int{}
 	for _, log := range logHistory {
 
 		logArr := parseLogLine(log)
-		if logArr.Status != "200" {
-			// We only care about successful requests
-			continue
+		switch logArr.Status {
+		case "200":
+			setData(logArr, apiMapSuccess, apiLatency)
+		case "500":
+			setData(logArr, apiMapFailure, apiLatency)
 		}
-
-		setDataForSuccess(logArr, apiMap, apiLatency)
 	}
 
 	elapsed := time.Since(start)
-	return extractJsonApiMap(apiMap), elapsed.Nanoseconds()
+	return extractJsonApiMap(apiMapSuccess), elapsed.Nanoseconds()
 }
 
-func setDataForSuccess(logArr ParsedLog, apiMap map[string]internalApiInfo, apiLatency map[string]int) {
+func setData(logArr ParsedLog, apiMap map[string]internalApiInfo, apiLatency map[string]int) {
 	if logArr.Service == "" {
 		return
 	}
@@ -97,9 +100,9 @@ func setDataForSuccess(logArr ParsedLog, apiMap map[string]internalApiInfo, apiL
 	key := logArr.Service
 	entry, exists := apiMap[key]
 	if !exists {
-		entry = internalApiInfo{successCount: 1}
+		entry = internalApiInfo{count: 1}
 	} else {
-		entry.successCount++
+		entry.count++
 	}
 
 	if logArr.LatencyError != "" {
@@ -128,7 +131,7 @@ func extractJsonApiMap(apiMap map[string]internalApiInfo) string {
 	jsonReadyApiMap := make(map[string]PublicAPIInfo, len(apiMap))
 	for key, value := range apiMap {
 		jsonReadyApiMap[key] = PublicAPIInfo{
-			SuccessCount:      value.successCount,
+			SuccessCount:      value.count,
 			AvgLatency:        value.avgLatency,
 			ValidLatencyCount: value.validLatencyCount,
 			LatencyErrors:     value.latencyErrors,
