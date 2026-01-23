@@ -26,14 +26,14 @@ type internalApiInfo struct {
 	successCount      int
 	avgLatency        int
 	validLatencyCount int
-	latencyError      string
+	latencyError      []string
 }
 
 type PublicAPIInfo struct {
 	SuccessCount      int
 	AvgLatency        int
 	ValidLatencyCount int
-	LatencyError      string
+	//LatencyError      string
 }
 
 /**
@@ -59,7 +59,7 @@ func runHistoryAnaliticsA() (string, int64) {
 			// We only care about successful requests
 			continue
 		}
-		setData(logArr, apiMap, apiLatency)
+		setDataForSuccess(logArr, apiMap, apiLatency)
 	}
 
 	t := time.Now()
@@ -84,61 +84,35 @@ func runHistoryAnaliticsB() (string, int64) {
 			// We only care about successful requests
 			continue
 		}
-		setData(logArr, apiMap, apiLatency)
+		setDataForSuccess(logArr, apiMap, apiLatency)
 	}
 
 	t := time.Now()
 	elapsed := t.Sub(start)
 	return extractJsonApiMap(apiMap), elapsed.Nanoseconds()
 }
-
-func setData(logArr []string, apiMap map[string]internalApiInfo, apiLatency map[string]int) {
-
+func setDataForSuccess(logArr []string, apiMap map[string]internalApiInfo, apiLatency map[string]int) {
 	key := logArr[0]
-	latency, latencyErr := strconv.Atoi(logArr[2])
+	latency, err := strconv.Atoi(logArr[2])
 
-	_, keyExists := apiMap[key]
-	if keyExists {
-
-		entry := apiMap[key]
+	entry, exists := apiMap[key]
+	if !exists {
+		entry = internalApiInfo{successCount: 1}
+	} else {
 		entry.successCount++
+	}
 
-		if latencyErr != nil {
-			entry.latencyError = latencyErr.Error()
-		} else {
-
-			apiLatency[key] += latency
-			entry.validLatencyCount++
-			avgLatency := apiLatency[key] / entry.validLatencyCount
-			entry.avgLatency = avgLatency
-
-		}
-
+	if err != nil {
+		entry.latencyError = append(entry.latencyError, err.Error())
 		apiMap[key] = entry
-
 		return
 	}
 
-	apiMap[key] = internalApiInfo{
-		successCount:      1,
-		avgLatency:        latency,
-		validLatencyCount: initLatencyCount(latencyErr),
-		latencyError:      getLatencyErrorVal(latencyErr),
-	}
-}
+	apiLatency[key] += latency
+	entry.validLatencyCount++
+	entry.avgLatency = apiLatency[key] / entry.validLatencyCount
 
-func getLatencyErrorVal(latencyErr error) string {
-	if latencyErr != nil {
-		return latencyErr.Error()
-	}
-	return ""
-}
-
-func initLatencyCount(latencyErr error) int {
-	if latencyErr != nil {
-		return 0
-	}
-	return 1
+	apiMap[key] = entry
 }
 
 func extractJsonApiMap(apiMap map[string]internalApiInfo) string {
@@ -149,7 +123,7 @@ func extractJsonApiMap(apiMap map[string]internalApiInfo) string {
 			SuccessCount:      value.successCount,
 			AvgLatency:        value.avgLatency,
 			ValidLatencyCount: value.validLatencyCount,
-			LatencyError:      value.latencyError,
+			//LatencyError:      value.latencyError,
 		}
 	}
 	jsonApiMap, _ := json.Marshal(jsonReadyApiMap)
