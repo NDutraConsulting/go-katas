@@ -52,8 +52,7 @@ func runHistoryAnalyticsA() (string, int64) {
 	apiMapFailure := map[string]internalApiInfo{}
 	apiLatency := map[string]int{}
 
-	for _, log := range logHistory {
-		logArr := parseLogLine(log)
+	for _, logArr := range logs {
 		switch logArr.Status {
 		case "200":
 			setData(logArr, apiMapSuccess, apiLatency)
