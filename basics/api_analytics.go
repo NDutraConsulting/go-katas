@@ -31,7 +31,7 @@ type internalApiInfo struct {
 	successCount      int
 	avgLatency        int
 	validLatencyCount int
-	latencyError      []string
+	latencyErrors     []string
 }
 
 /**
@@ -103,7 +103,7 @@ func setDataForSuccess(logArr ParsedLog, apiMap map[string]internalApiInfo, apiL
 	}
 
 	if logArr.LatencyError != "" {
-		entry.latencyError = append(entry.latencyError, logArr.LatencyError)
+		entry.latencyErrors = append(entry.latencyErrors, logArr.LatencyError)
 		apiMap[key] = entry
 		// Do not continue processing latency
 		return
@@ -131,7 +131,7 @@ func extractJsonApiMap(apiMap map[string]internalApiInfo) string {
 			SuccessCount:      value.successCount,
 			AvgLatency:        value.avgLatency,
 			ValidLatencyCount: value.validLatencyCount,
-			LatencyErrors:     value.latencyError,
+			LatencyErrors:     value.latencyErrors,
 		}
 	}
 	jsonApiMap, err := json.Marshal(jsonReadyApiMap)
