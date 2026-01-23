@@ -23,6 +23,7 @@ func requestHistory() []string {
 		"user 200 ",
 		"user",
 		"200 1500",
+		"",
 	}
 }
 
@@ -151,6 +152,9 @@ func parseLogLine(line string) ParsedLog {
 	f := strings.Fields(line)
 
 	var out ParsedLog
+	if len(f) == 0 {
+		return out
+	}
 
 	if len(f) >= 1 {
 		out.Service = f[0]
