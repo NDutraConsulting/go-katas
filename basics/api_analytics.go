@@ -38,7 +38,7 @@ type internalApiInfo struct {
 * Parse all logs first (stores parsed structs)
 * Larger memory footprint
 **/
-func runHistoryAnalyticsA() (string, int64) {
+func runHistoryAnalyticsA() (string, string, int64) {
 	start := time.Now()
 	logHistory := requestHistory()
 
@@ -64,14 +64,14 @@ func runHistoryAnalyticsA() (string, int64) {
 	}
 
 	elapsed := time.Since(start)
-	return extractJsonApiMap(apiMapSuccess), elapsed.Nanoseconds()
+	return extractJsonApiMap(apiMapSuccess, "success"), extractJsonApiMap(apiMapFailure, "failure"), elapsed.Nanoseconds()
 }
 
 /**
 * Parse + process in one pass (doesn’t store parsed logs)
 * Smaller memory footprint
 **/
-func runHistoryAnalyticsB() (string, int64) {
+func runHistoryAnalyticsB() (string, string, int64) {
 	start := time.Now()
 
 	logHistory := requestHistory()
@@ -93,7 +93,7 @@ func runHistoryAnalyticsB() (string, int64) {
 	}
 
 	elapsed := time.Since(start)
-	return extractJsonApiMap(apiMapSuccess), elapsed.Nanoseconds()
+	return extractJsonApiMap(apiMapSuccess, "success"), extractJsonApiMap(apiMapFailure, "failure"), elapsed.Nanoseconds()
 }
 
 func setData(logArr ParsedLog, apiMap map[string]internalApiInfo, apiLatency map[string]int) {
@@ -124,18 +124,20 @@ func setData(logArr ParsedLog, apiMap map[string]internalApiInfo, apiLatency map
 }
 
 type PublicAPIInfo struct {
-	SuccessCount      int
+	ResponseType      string
+	Count             int
 	AvgLatency        int
 	ValidLatencyCount int
 	LatencyErrors     []string `json:"latency_errors,omitempty"`
 }
 
-func extractJsonApiMap(apiMap map[string]internalApiInfo) string {
+func extractJsonApiMap(apiMap map[string]internalApiInfo, responseType string) string {
 
 	jsonReadyApiMap := make(map[string]PublicAPIInfo, len(apiMap))
 	for key, value := range apiMap {
 		jsonReadyApiMap[key] = PublicAPIInfo{
-			SuccessCount:      value.count,
+			ResponseType:      responseType,
+			Count:             value.count,
 			AvgLatency:        value.avgLatency,
 			ValidLatencyCount: value.validLatencyCount,
 			LatencyErrors:     value.latencyErrors,

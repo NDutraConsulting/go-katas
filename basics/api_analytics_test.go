@@ -9,52 +9,63 @@ import (
 
 func TestAPIAnalytics(t *testing.T) {
 
-	responseA, elapsedA := runHistoryAnalyticsA()
-	responseB, elapsedB := runHistoryAnalyticsB()
+	successResponseA, failureResponseA, elapsedA := runHistoryAnalyticsA()
+	successResponseB, failureResponseB, elapsedB := runHistoryAnalyticsB()
 
-	if responseA != responseB {
+	if successResponseA != successResponseB {
+		t.Errorf("Expected same output, got different outputs")
+	}
+
+	if failureResponseA != failureResponseB {
 		t.Errorf("Expected same output, got different outputs")
 	}
 
 	// Accounting for map ordering issues
 	var mapA map[string]PublicAPIInfo
 	var mapB map[string]PublicAPIInfo
-	err := json.Unmarshal([]byte(responseA), &mapA)
+	err := json.Unmarshal([]byte(successResponseA), &mapA)
 	if err != nil {
-		t.Fatalf("failed to unmarshal responseA: %v", err)
+		t.Fatalf("failed to unmarshal successResponseA: %v", err)
 	}
 
-	err = json.Unmarshal([]byte(responseB), &mapB)
+	err = json.Unmarshal([]byte(successResponseB), &mapB)
 	if err != nil {
-		t.Fatalf("failed to unmarshal responseB: %v", err)
+		t.Fatalf("failed to unmarshal successResponseB: %v", err)
 	}
 
 	if !reflect.DeepEqual(mapA, mapB) {
 		t.Errorf("Expected same output, got different outputs\nA=%v\nB=%v", mapA, mapB)
 	}
 
-	fmt.Println("responseA:", responseA)
-	fmt.Println("responseB:", responseB)
+	fmt.Println("============================ Failure Analytics ============================")
+
+	fmt.Println("failureResponseA:", failureResponseA)
+	fmt.Println("failureResponseB:", failureResponseB)
+
+	fmt.Println("============================ Success Analytics ============================")
+
+	fmt.Println("successResponseA:", successResponseA)
+	fmt.Println("successResponseB:", successResponseB)
 
 	fmt.Println("------------ RUN 1 (A -> B)------------")
 	fmt.Println("A time: ", elapsedA)
 	fmt.Println("B time: ", elapsedB)
 
 	fmt.Println("------------ RUN 2 (B -> A)------------")
-	responseB, elapsedB = runHistoryAnalyticsB()
-	responseA, elapsedA = runHistoryAnalyticsA()
+	successResponseB, failureResponseB, elapsedB = runHistoryAnalyticsB()
+	successResponseA, failureResponseA, elapsedA = runHistoryAnalyticsA()
 	fmt.Println("A time: ", elapsedA)
 	fmt.Println("B time: ", elapsedB)
 
 	fmt.Println("------------ RUN 3 (B -> A)------------")
-	responseB, elapsedB = runHistoryAnalyticsB()
-	responseA, elapsedA = runHistoryAnalyticsA()
+	successResponseB, failureResponseB, elapsedB = runHistoryAnalyticsB()
+	successResponseA, failureResponseA, elapsedA = runHistoryAnalyticsA()
 	fmt.Println("A time: ", elapsedA)
 	fmt.Println("B time: ", elapsedB)
 
 	fmt.Println("------------ RUN 4 (A -> B)------------")
-	responseA, elapsedA = runHistoryAnalyticsA()
-	responseB, elapsedB = runHistoryAnalyticsB()
+	successResponseA, failureResponseA, elapsedA = runHistoryAnalyticsA()
+	successResponseB, failureResponseB, elapsedB = runHistoryAnalyticsB()
 	fmt.Println("A time: ", elapsedA)
 	fmt.Println("B time: ", elapsedB)
 
@@ -68,10 +79,10 @@ func TestAPIAnalytics(t *testing.T) {
 	fmt.Println("A Avg: ", aAvg, "ns --- B Avg: ", bAvg, "ns")
 }
 
-func runTestBlock(f func() (string, int64), runs int64) int64 {
+func runTestBlock(f func() (string, string, int64), runs int64) int64 {
 	ch := make(chan int64)
 
-	go func(f func() (string, int64), runs int64) {
+	go func(f func() (string, string, int64), runs int64) {
 		total := int64(0)
 		for range runs {
 			total += timeTest(f)
@@ -82,9 +93,9 @@ func runTestBlock(f func() (string, int64), runs int64) int64 {
 	return <-ch
 }
 
-func timeTest(f func() (string, int64)) int64 {
+func timeTest(f func() (string, string, int64)) int64 {
 
-	_, time := f()
+	_, _, time := f()
 
 	return time
 }
