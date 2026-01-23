@@ -165,8 +165,8 @@ func parseLogLine(line string) ParsedLog {
 		} else {
 			out.Latency = l
 		}
-	} else {
-		out.LatencyError = "Latency missing"
+	} else if len(f) == 2 {
+		out.LatencyError = "latency missing"
 	}
 
 	return out
