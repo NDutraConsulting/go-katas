@@ -21,8 +21,8 @@ func TestAPIAnalytics(t *testing.T) {
 	}
 
 	// Accounting for map ordering issues
-	var mapA map[string]PublicAPIInfo
-	var mapB map[string]PublicAPIInfo
+	var mapA ResponseJSON
+	var mapB ResponseJSON
 	err := json.Unmarshal([]byte(successResponseA), &mapA)
 	if err != nil {
 		t.Fatalf("failed to unmarshal successResponseA: %v", err)

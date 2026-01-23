@@ -124,7 +124,6 @@ func setData(logArr ParsedLog, apiMap map[string]internalApiInfo, apiLatency map
 }
 
 type PublicAPIInfo struct {
-	ResponseType      string
 	Count             int
 	AvgLatency        int
 	ValidLatencyCount int
@@ -136,18 +135,28 @@ func extractJsonApiMap(apiMap map[string]internalApiInfo, responseType string) s
 	jsonReadyApiMap := make(map[string]PublicAPIInfo, len(apiMap))
 	for key, value := range apiMap {
 		jsonReadyApiMap[key] = PublicAPIInfo{
-			ResponseType:      responseType,
 			Count:             value.count,
 			AvgLatency:        value.avgLatency,
 			ValidLatencyCount: value.validLatencyCount,
 			LatencyErrors:     value.latencyErrors,
 		}
 	}
-	jsonApiMap, err := json.Marshal(jsonReadyApiMap)
+
+	rv := ResponseJSON{
+		ResponseType: responseType,
+		Services:     jsonReadyApiMap,
+	}
+
+	jsonApiMap, err := json.Marshal(rv)
 	if err != nil {
 		return "{}"
 	}
 	return string(jsonApiMap)
+}
+
+type ResponseJSON struct {
+	ResponseType string
+	Services     map[string]PublicAPIInfo
 }
 
 type ParsedLog struct {
