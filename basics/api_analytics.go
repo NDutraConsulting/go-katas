@@ -20,7 +20,7 @@ func requestHistory() []string {
 		// Error cases
 		"edge 200 1x0",
 		"edge 500",
-		"edge 200 ",
+		"user 200 ",
 		"user",
 		"200 1500",
 	}
