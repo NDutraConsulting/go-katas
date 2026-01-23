@@ -7,8 +7,8 @@ import (
 
 func TestAPIAnalytics(t *testing.T) {
 
-	responseA, elapsedA := runHistoryAnaliticsA()
-	responseB, elapsedB := runHistoryAnaliticsB()
+	responseA, elapsedA := runHistoryAnalyticsA()
+	responseB, elapsedB := runHistoryAnalyticsB()
 
 	if responseA != responseB {
 		t.Errorf("Expected same output, got different outputs")
@@ -21,20 +21,20 @@ func TestAPIAnalytics(t *testing.T) {
 	fmt.Println("B time: ", elapsedB)
 
 	fmt.Println("------------ RUN 2 (B -> A)------------")
-	responseB, elapsedB = runHistoryAnaliticsB()
-	responseA, elapsedA = runHistoryAnaliticsA()
+	responseB, elapsedB = runHistoryAnalyticsB()
+	responseA, elapsedA = runHistoryAnalyticsA()
 	fmt.Println("A time: ", elapsedA)
 	fmt.Println("B time: ", elapsedB)
 
 	fmt.Println("------------ RUN 3 (B -> A)------------")
-	responseB, elapsedB = runHistoryAnaliticsB()
-	responseA, elapsedA = runHistoryAnaliticsA()
+	responseB, elapsedB = runHistoryAnalyticsB()
+	responseA, elapsedA = runHistoryAnalyticsA()
 	fmt.Println("A time: ", elapsedA)
 	fmt.Println("B time: ", elapsedB)
 
 	fmt.Println("------------ RUN 4 (A -> B)------------")
-	responseA, elapsedA = runHistoryAnaliticsA()
-	responseB, elapsedB = runHistoryAnaliticsB()
+	responseA, elapsedA = runHistoryAnalyticsA()
+	responseB, elapsedB = runHistoryAnalyticsB()
 	fmt.Println("A time: ", elapsedA)
 	fmt.Println("B time: ", elapsedB)
 
@@ -42,8 +42,8 @@ func TestAPIAnalytics(t *testing.T) {
 	runs := int64(100000)
 	fmt.Println("Run each function: ", runs, " times and take the average.")
 
-	aAvg := runTestBlock(runHistoryAnaliticsA, runs)
-	bAvg := runTestBlock(runHistoryAnaliticsB, runs)
+	aAvg := runTestBlock(runHistoryAnalyticsA, runs)
+	bAvg := runTestBlock(runHistoryAnalyticsB, runs)
 
 	fmt.Println("A Avg: ", aAvg, "ns --- B Avg: ", bAvg, "ns")
 }

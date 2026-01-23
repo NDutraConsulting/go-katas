@@ -9,7 +9,7 @@ import (
 
 func requestHistory() []string {
 
-	// api-name responese latency
+	// api-name response latency
 	return []string{
 		"edge 200 1500",
 		"edge 200 1500",
@@ -38,7 +38,7 @@ type internalApiInfo struct {
 * Parse all logs first (stores parsed structs)
 * Larger memory footprint
 **/
-func runHistoryAnaliticsA() (string, int64) {
+func runHistoryAnalyticsA() (string, int64) {
 	start := time.Now()
 	logHistory := requestHistory()
 
@@ -60,8 +60,7 @@ func runHistoryAnaliticsA() (string, int64) {
 		setDataForSuccess(logArr, apiMap, apiLatency)
 	}
 
-	t := time.Now()
-	elapsed := t.Sub(start)
+	elapsed := time.Since(start)
 	return extractJsonApiMap(apiMap), elapsed.Nanoseconds()
 }
 
@@ -69,7 +68,7 @@ func runHistoryAnaliticsA() (string, int64) {
 * Parse + process in one pass (doesn’t store parsed logs)
 * Smaller memory footprint
 **/
-func runHistoryAnaliticsB() (string, int64) {
+func runHistoryAnalyticsB() (string, int64) {
 	start := time.Now()
 
 	logHistory := requestHistory()
@@ -86,12 +85,14 @@ func runHistoryAnaliticsB() (string, int64) {
 		setDataForSuccess(logArr, apiMap, apiLatency)
 	}
 
-	t := time.Now()
-	elapsed := t.Sub(start)
+	elapsed := time.Since(start)
 	return extractJsonApiMap(apiMap), elapsed.Nanoseconds()
 }
 
 func setDataForSuccess(logArr ParsedLog, apiMap map[string]internalApiInfo, apiLatency map[string]int) {
+	if logArr.Service == "" {
+		return
+	}
 
 	key := logArr.Service
 	entry, exists := apiMap[key]
@@ -119,7 +120,7 @@ type PublicAPIInfo struct {
 	SuccessCount      int
 	AvgLatency        int
 	ValidLatencyCount int
-	LatencyErrors     []string
+	LatencyErrors     []string `json:"latency_errors,omitempty"`
 }
 
 func extractJsonApiMap(apiMap map[string]internalApiInfo) string {
