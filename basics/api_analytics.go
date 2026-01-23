@@ -103,8 +103,6 @@ func setData(logArr []string, apiMap map[string]ApiInfo, apiLatency map[string]i
 	key := logArr[0]
 	latency, latencyErr := strconv.Atoi(logArr[2])
 
-	apiLatency[key] += latency
-
 	_, keyExists := apiMap[key]
 	if keyExists {
 
@@ -114,6 +112,8 @@ func setData(logArr []string, apiMap map[string]ApiInfo, apiLatency map[string]i
 		if latencyErr != nil {
 			entry.LatencyError = latencyErr.Error()
 		} else {
+
+			apiLatency[key] += latency
 			entry.ValidLatencyCount++
 			avgLatency := apiLatency[key] / entry.ValidLatencyCount
 			entry.AvgLatency = avgLatency
