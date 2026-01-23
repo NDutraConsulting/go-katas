@@ -7,33 +7,36 @@ import (
 
 func TestAPIAnalytics(t *testing.T) {
 
-	fmt.Println("------------ RUN 1 ------------")
 	responseA, elapsedA := runHistoryAnaliticsA()
 	responseB, elapsedB := runHistoryAnaliticsB()
 
-	fmt.Println("A time: ", elapsedA, "response:", responseA)
-	fmt.Println("B time: ", elapsedB, "response:", responseB)
 	if responseA != responseB {
 		t.Errorf("Expected same output, got different outputs")
 	}
+	fmt.Println("responseA:", responseA)
+	fmt.Println("responseB:", responseB)
 
-	fmt.Println("------------ RUN 2 ------------")
+	fmt.Println("------------ RUN 1 (A -> B)------------")
+	fmt.Println("A time: ", elapsedA)
+	fmt.Println("B time: ", elapsedB)
+
+	fmt.Println("------------ RUN 2 (B -> A)------------")
 	responseB, elapsedB = runHistoryAnaliticsB()
 	responseA, elapsedA = runHistoryAnaliticsA()
-	fmt.Println("A time: ", elapsedA, "response:", responseA)
-	fmt.Println("B time: ", elapsedB, "response:", responseB)
+	fmt.Println("A time: ", elapsedA)
+	fmt.Println("B time: ", elapsedB)
 
-	fmt.Println("------------ RUN 3 ------------")
+	fmt.Println("------------ RUN 3 (B -> A)------------")
 	responseB, elapsedB = runHistoryAnaliticsB()
 	responseA, elapsedA = runHistoryAnaliticsA()
-	fmt.Println("A time: ", elapsedA, "response:", responseA)
-	fmt.Println("B time: ", elapsedB, "response:", responseB)
+	fmt.Println("A time: ", elapsedA)
+	fmt.Println("B time: ", elapsedB)
 
-	fmt.Println("------------ RUN 4 ------------")
+	fmt.Println("------------ RUN 4 (A -> B)------------")
 	responseA, elapsedA = runHistoryAnaliticsA()
 	responseB, elapsedB = runHistoryAnaliticsB()
-	fmt.Println("A time: ", elapsedA, "response:", responseA)
-	fmt.Println("B time: ", elapsedB, "response:", responseB)
+	fmt.Println("A time: ", elapsedA)
+	fmt.Println("B time: ", elapsedB)
 
 	fmt.Println("\n------------ RUN Averages ------------")
 	runs := int64(100000)
@@ -41,15 +44,6 @@ func TestAPIAnalytics(t *testing.T) {
 
 	aAvg := runTestBlock(runHistoryAnaliticsA, runs)
 	bAvg := runTestBlock(runHistoryAnaliticsB, runs)
-
-	bAvg += runTestBlock(runHistoryAnaliticsB, runs)
-	aAvg += runTestBlock(runHistoryAnaliticsA, runs)
-
-	bAvg += runTestBlock(runHistoryAnaliticsB, runs)
-	aAvg += runTestBlock(runHistoryAnaliticsA, runs)
-
-	aAvg = aAvg / 3
-	bAvg = bAvg / 3
 
 	fmt.Println("A Avg: ", aAvg, "ns --- B Avg: ", bAvg, "ns")
 }

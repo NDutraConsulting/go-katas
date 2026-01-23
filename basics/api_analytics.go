@@ -38,17 +38,14 @@ func runHistoryAnaliticsA() (string, int64) {
 	start := time.Now()
 	logHistory := requestHistory()
 
-	// We know the number of elements we need so lets initialize the memory
+	// Initialize the memory
 	logs := make([][]string, len(logHistory))
 
 	for i, log := range logHistory {
 		logs[i] = strings.Fields(log)
 	}
 
-	// This might have only 1 entry
 	apiMap := map[string]ApiInfo{}
-
-	// We know the number of elements we need so lets initialize the memory
 	apiLatency := map[string]int{}
 
 	for _, logArr := range logs {
@@ -79,12 +76,8 @@ func runHistoryAnaliticsB() (string, int64) {
 
 	logHistory := requestHistory()
 
-	// This might have only 1 entry
 	apiMap := map[string]ApiInfo{}
-
-	// We know the number of elements we need so lets initialize the memory
 	apiLatency := map[string]int{}
-
 	for _, log := range logHistory {
 
 		logArr := strings.Fields(log)
