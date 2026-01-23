@@ -11,8 +11,8 @@ func requestHistory() []string {
 
 	// api-name response latency
 	return []string{
-		"edge 200 1500",
-		"edge 200 1500",
+		"edge 201 1500",
+		"edge 202 1500",
 		"edge 500 50",
 		"auth 200 200",
 		"auth 500 100",
@@ -55,10 +55,9 @@ func runHistoryAnalyticsA() (string, string, int64) {
 	apiLatencyFailure := map[string]int{}
 
 	for _, logArr := range logs {
-		switch logArr.Status {
-		case "200":
+		if is2xx(logArr.Status) {
 			setData(logArr, apiMapSuccess, apiLatencySuccess)
-		case "500":
+		} else if is5xx(logArr.Status) {
 			setData(logArr, apiMapFailure, apiLatencyFailure)
 		}
 	}
@@ -84,10 +83,9 @@ func runHistoryAnalyticsB() (string, string, int64) {
 	for _, log := range logHistory {
 
 		logArr := parseLogLine(log)
-		switch logArr.Status {
-		case "200":
+		if is2xx(logArr.Status) {
 			setData(logArr, apiMapSuccess, apiLatencySuccess)
-		case "500":
+		} else if is5xx(logArr.Status) {
 			setData(logArr, apiMapFailure, apiLatencyFailure)
 		}
 	}
@@ -95,6 +93,9 @@ func runHistoryAnalyticsB() (string, string, int64) {
 	elapsed := time.Since(start)
 	return extractJsonApiMap(apiMapSuccess, "success"), extractJsonApiMap(apiMapFailure, "failure"), elapsed.Nanoseconds()
 }
+
+func is5xx(s int) bool { return s >= 500 && s < 600 }
+func is2xx(s int) bool { return s >= 200 && s < 300 }
 
 func setData(logArr ParsedLog, apiMap map[string]internalApiInfo, apiLatency map[string]int) {
 	if logArr.Service == "" {
@@ -161,7 +162,8 @@ type ResponseJSON struct {
 
 type ParsedLog struct {
 	Service      string
-	Status       string
+	Status       int
+	StatusValid  bool
 	Latency      int
 	LatencyError string
 }
@@ -179,7 +181,10 @@ func parseLogLine(line string) ParsedLog {
 		out.Service = f[0]
 	}
 	if len(f) >= 2 {
-		out.Status = f[1]
+		if s, err := strconv.Atoi(f[1]); err == nil {
+			out.Status = s
+			out.StatusValid = true
+		}
 	}
 	if len(f) >= 3 {
 		l, err := strconv.Atoi(f[2])
