@@ -30,6 +30,7 @@ func requestHistory() []string {
 type internalApiInfo struct {
 	count             int
 	avgLatency        int
+	sumLatency        int
 	validLatencyCount int
 	latencyErrors     []string
 }
@@ -49,19 +50,16 @@ func runHistoryAnalyticsA() (string, string, int64) {
 	}
 
 	apiMapSuccess := map[string]internalApiInfo{}
-	apiLatencySuccess := map[string]int{}
-
 	apiMapFailure := map[string]internalApiInfo{}
-	apiLatencyFailure := map[string]int{}
 
 	for _, logArr := range logs {
 		if !logArr.StatusValid {
 			continue
 		}
 		if is2xx(logArr.Status) {
-			setData(logArr, apiMapSuccess, apiLatencySuccess)
+			setData(logArr, apiMapSuccess)
 		} else if is5xx(logArr.Status) {
-			setData(logArr, apiMapFailure, apiLatencyFailure)
+			setData(logArr, apiMapFailure)
 		}
 	}
 
@@ -78,10 +76,8 @@ func runHistoryAnalyticsB() (string, string, int64) {
 
 	logHistory := requestHistory()
 	apiMapSuccess := map[string]internalApiInfo{}
-	apiLatencySuccess := map[string]int{}
 
 	apiMapFailure := map[string]internalApiInfo{}
-	apiLatencyFailure := map[string]int{}
 
 	for _, log := range logHistory {
 		logArr := parseLogLine(log)
@@ -90,9 +86,9 @@ func runHistoryAnalyticsB() (string, string, int64) {
 		}
 
 		if is2xx(logArr.Status) {
-			setData(logArr, apiMapSuccess, apiLatencySuccess)
+			setData(logArr, apiMapSuccess)
 		} else if is5xx(logArr.Status) {
-			setData(logArr, apiMapFailure, apiLatencyFailure)
+			setData(logArr, apiMapFailure)
 		}
 	}
 
@@ -103,7 +99,7 @@ func runHistoryAnalyticsB() (string, string, int64) {
 func is5xx(s int) bool { return s >= 500 && s < 600 }
 func is2xx(s int) bool { return s >= 200 && s < 300 }
 
-func setData(logArr ParsedLog, apiMap map[string]internalApiInfo, apiLatency map[string]int) {
+func setData(logArr ParsedLog, apiMap map[string]internalApiInfo) {
 	if logArr.Service == "" {
 		return
 	}
@@ -123,9 +119,9 @@ func setData(logArr ParsedLog, apiMap map[string]internalApiInfo, apiLatency map
 		return
 	}
 
-	apiLatency[key] += logArr.Latency
+	entry.sumLatency += logArr.Latency
 	entry.validLatencyCount++
-	entry.avgLatency = apiLatency[key] / entry.validLatencyCount
+	entry.avgLatency = entry.sumLatency / entry.validLatencyCount
 
 	apiMap[key] = entry
 }
