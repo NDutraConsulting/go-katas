@@ -75,7 +75,6 @@ func runHistoryAnaliticsB() (string, int64) {
 	start := time.Now()
 
 	logHistory := requestHistory()
-
 	apiMap := map[string]ApiInfo{}
 	apiLatency := map[string]int{}
 	for _, log := range logHistory {
@@ -90,12 +89,8 @@ func runHistoryAnaliticsB() (string, int64) {
 
 	t := time.Now()
 	elapsed := t.Sub(start)
-
-	outMap := &apiMap
-	jsonApiMap, _ := json.Marshal(outMap)
-
+	jsonApiMap, _ := json.Marshal(apiMap)
 	return string(jsonApiMap), elapsed.Nanoseconds()
-
 }
 
 func setData(logArr []string, apiMap map[string]ApiInfo, apiLatency map[string]int) {
