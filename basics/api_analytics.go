@@ -49,15 +49,17 @@ func runHistoryAnalyticsA() (string, int64) {
 	}
 
 	apiMapSuccess := map[string]internalApiInfo{}
+	apiLatencySuccess := map[string]int{}
+
 	apiMapFailure := map[string]internalApiInfo{}
-	apiLatency := map[string]int{}
+	apiLatencyFailure := map[string]int{}
 
 	for _, logArr := range logs {
 		switch logArr.Status {
 		case "200":
-			setData(logArr, apiMapSuccess, apiLatency)
+			setData(logArr, apiMapSuccess, apiLatencySuccess)
 		case "500":
-			setData(logArr, apiMapFailure, apiLatency)
+			setData(logArr, apiMapFailure, apiLatencyFailure)
 		}
 	}
 
@@ -74,16 +76,19 @@ func runHistoryAnalyticsB() (string, int64) {
 
 	logHistory := requestHistory()
 	apiMapSuccess := map[string]internalApiInfo{}
+	apiLatencySuccess := map[string]int{}
+
 	apiMapFailure := map[string]internalApiInfo{}
-	apiLatency := map[string]int{}
+	apiLatencyFailure := map[string]int{}
+
 	for _, log := range logHistory {
 
 		logArr := parseLogLine(log)
 		switch logArr.Status {
 		case "200":
-			setData(logArr, apiMapSuccess, apiLatency)
+			setData(logArr, apiMapSuccess, apiLatencySuccess)
 		case "500":
-			setData(logArr, apiMapFailure, apiLatency)
+			setData(logArr, apiMapFailure, apiLatencyFailure)
 		}
 	}
 
