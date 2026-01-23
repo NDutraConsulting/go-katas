@@ -20,6 +20,7 @@ func requestHistory() []string {
 		// Error cases
 		"edge 200 1x0",
 		"edge 500",
+		"edge 200 ",
 		"user",
 		"200 1500",
 	}
@@ -88,6 +89,7 @@ func runHistoryAnaliticsB() (string, int64) {
 	elapsed := t.Sub(start)
 	return extractJsonApiMap(apiMap), elapsed.Nanoseconds()
 }
+
 func setDataForSuccess(logArr ParsedLog, apiMap map[string]internalApiInfo, apiLatency map[string]int) {
 
 	key := logArr.Service
@@ -145,7 +147,9 @@ type ParsedLog struct {
 }
 
 func parseLogLine(line string) ParsedLog {
-	f := strings.Fields(line) // handles extra spaces/tabs safely
+	line = strings.TrimSpace(line)
+	f := strings.Fields(line)
+
 	var out ParsedLog
 
 	if len(f) >= 1 {
@@ -161,6 +165,8 @@ func parseLogLine(line string) ParsedLog {
 		} else {
 			out.Latency = l
 		}
+	} else {
+		out.LatencyError = "Latency missing"
 	}
 
 	return out
