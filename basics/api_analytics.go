@@ -12,13 +12,16 @@ func requestHistory() []string {
 	// api-name responese latency
 	return []string{
 		"edge 200 1500",
-		"edge 200 1x0",
+		"edge 200 1500",
 		"edge 500 50",
 		"auth 200 200",
-		"edge 500",
 		"auth 500 100",
 		"user 200 100",
-		"edge 200 1500",
+		// Error cases
+		"edge 200 1x0",
+		"edge 500",
+		"user",
+		"200 1500",
 	}
 }
 
@@ -30,8 +33,8 @@ type internalApiInfo struct {
 }
 
 /**
-* Convert the log history into a map of API information BEFORE processing
-* This has a larger memory footprint
+* Parse all logs first (stores parsed structs)
+* Larger memory footprint
 **/
 func runHistoryAnaliticsA() (string, int64) {
 	start := time.Now()
@@ -61,8 +64,8 @@ func runHistoryAnaliticsA() (string, int64) {
 }
 
 /**
-* Convert the log history into a map of API information WHILE processing
-* This reuses the same memory for the log string array
+* Parse + process in one pass (doesn’t store parsed logs)
+* Smaller memory footprint
 **/
 func runHistoryAnaliticsB() (string, int64) {
 	start := time.Now()
@@ -113,7 +116,7 @@ type PublicAPIInfo struct {
 	SuccessCount      int
 	AvgLatency        int
 	ValidLatencyCount int
-	LatencyError      []string
+	LatencyErrors     []string
 }
 
 func extractJsonApiMap(apiMap map[string]internalApiInfo) string {
@@ -124,10 +127,13 @@ func extractJsonApiMap(apiMap map[string]internalApiInfo) string {
 			SuccessCount:      value.successCount,
 			AvgLatency:        value.avgLatency,
 			ValidLatencyCount: value.validLatencyCount,
-			LatencyError:      value.latencyError,
+			LatencyErrors:     value.latencyError,
 		}
 	}
-	jsonApiMap, _ := json.Marshal(jsonReadyApiMap)
+	jsonApiMap, err := json.Marshal(jsonReadyApiMap)
+	if err != nil {
+		return "{}"
+	}
 	return string(jsonApiMap)
 }
 
@@ -156,5 +162,6 @@ func parseLogLine(line string) ParsedLog {
 			out.Latency = l
 		}
 	}
+
 	return out
 }
