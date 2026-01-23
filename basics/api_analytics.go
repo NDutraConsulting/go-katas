@@ -52,7 +52,6 @@ func runHistoryAnalyticsA() (string, string, int64) {
 
 	apiMapSuccess := map[string]internalApiInfo{}
 	apiMapFailure := map[string]internalApiInfo{}
-
 	for _, logArr := range logs {
 		if !logArr.StatusValid {
 			continue
@@ -77,9 +76,7 @@ func runHistoryAnalyticsB() (string, string, int64) {
 
 	logHistory := requestHistory()
 	apiMapSuccess := map[string]internalApiInfo{}
-
 	apiMapFailure := map[string]internalApiInfo{}
-
 	for _, log := range logHistory {
 		logArr := parseLogLine(log)
 		if !logArr.StatusValid {
